@@ -1,0 +1,4 @@
+db_user=root
+db_pass=root1234
+db_url=jdbc:mysql://localhost:3306/
+db=db_if_hsm
