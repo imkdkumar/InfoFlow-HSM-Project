@@ -78,7 +78,7 @@ public class HSMClient {
 
                             String insulinLevel = service.monitorInsulinLevel(username, JWT);
                             if ("".equals(insulinLevel)) {
-                                System.out.println("\n\n-------Insulin Check Information-------n\nError!! -  Access denied");
+                                System.out.println("\n\n-------Insulin Check Information-------\nError!! -  Access denied");
                             } else {
                                 System.out.println("\n\n----Insulin Check Information ---\nInsulin Check is in progress.........");
                                 try {
