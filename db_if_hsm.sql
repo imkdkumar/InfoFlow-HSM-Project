@@ -67,7 +67,7 @@ CREATE TABLE `login` (
 
 LOCK TABLES `login` WRITE;
 /*!40000 ALTER TABLE `login` DISABLE KEYS */;
-INSERT INTO `login` VALUES ('dinesh','1234',NULL,2,'1100');
+INSERT INTO `login` VALUES ('dinesh','1234',NULL,2,'1100'),('teko','1234',NULL,3,'1200');
 /*!40000 ALTER TABLE `login` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -121,7 +121,7 @@ CREATE TABLE `user_type` (
 
 LOCK TABLES `user_type` WRITE;
 /*!40000 ALTER TABLE `user_type` DISABLE KEYS */;
-INSERT INTO `user_type` VALUES (2,'Patient','call_ambulance'),(3,'Doctor',NULL),(4,'Insurance_Company',NULL);
+INSERT INTO `user_type` VALUES (2,'Patient','call_ambulance,check_insulin'),(3,'Doctor','none'),(4,'Insurance_Company','none');
 /*!40000 ALTER TABLE `user_type` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -134,4 +134,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-04-03 18:08:24
+-- Dump completed on 2023-04-09 22:20:40

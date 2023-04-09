@@ -24,32 +24,37 @@ public interface HsmService extends Remote {
     ImmutablePair<String, String>  login(String username, String password) throws RemoteException;
     
     /** For continuous glucose monitoring(CGM)  or insulin level
-     * @param level
+     * @param username
+     * @param JWT
      * @return 
      * @throws java.rmi.RemoteException **/
-    public String monitorInsulinLevel(int level) throws RemoteException;
+    public String monitorInsulinLevel(String username, String JWT) throws RemoteException;
     
     /** patient should be able to call an ambulance
      * @param isEmergency
+     * @param JWT
      * @return 
      * @throws java.rmi.RemoteException **/
-    public String callForAmbulance(String isEmergency) throws RemoteException;
+    public String callForAmbulance(String isEmergency, String JWT) throws RemoteException;
     
     /** Patient can give access to doctor to check its insulin level data
      * @param grantAccess
+     * @param JWT
      * @return 
      * @throws java.rmi.RemoteException **/
-    public String giveAccessToDoctor(String grantAccess) throws RemoteException;
+    public String giveAccessToDoctor(String grantAccess, String JWT) throws RemoteException;
     
     /** Record the amount of insulin taken
      * @param isEmergency
+     * @param JWT
      * @return 
      * @throws java.rmi.RemoteException **/
-    public String recordInsulineTaken(String isEmergency) throws RemoteException;
+    public String recordInsulineTaken(String isEmergency, String JWT) throws RemoteException;
     
     /** Print the report history
      * @param isEmergency
+     * @param JWT
      * @return 
      * @throws java.rmi.RemoteException **/
-    public String printPatientReport(String isEmergency) throws RemoteException;
+    public String printPatientReport(String isEmergency, String JWT) throws RemoteException;
 }
