@@ -4,8 +4,10 @@
  */
 package Server;
 
+import Model.InsulinProgress;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 /**
@@ -29,6 +31,15 @@ public interface HsmService extends Remote {
      * @return 
      * @throws java.rmi.RemoteException **/
     public String monitorInsulinLevel(String username, String JWT) throws RemoteException;
+
+    /**
+     *
+     * @param username
+     * @param JWT
+     * @return
+     * @throws RemoteException
+     */
+    public ArrayList<InsulinProgress> monitorInsulinProgress(String username, String JWT) throws RemoteException;
     
     /** patient should be able to call an ambulance
      * @param isEmergency

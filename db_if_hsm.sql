@@ -18,6 +18,56 @@ USE `db_if_hsm`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `granted_permissions`
+--
+
+DROP TABLE IF EXISTS `granted_permissions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `granted_permissions` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `patient_name` varchar(45) DEFAULT NULL,
+  `allowed_doctor` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `granted_permissions`
+--
+
+LOCK TABLES `granted_permissions` WRITE;
+/*!40000 ALTER TABLE `granted_permissions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `granted_permissions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `insulin_progress`
+--
+
+DROP TABLE IF EXISTS `insulin_progress`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `insulin_progress` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `insulin_level` int DEFAULT NULL,
+  `patient_name` varchar(45) DEFAULT NULL,
+  `data_time` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `insulin_progress`
+--
+
+LOCK TABLES `insulin_progress` WRITE;
+/*!40000 ALTER TABLE `insulin_progress` DISABLE KEYS */;
+INSERT INTO `insulin_progress` VALUES (1,49,'dinesh','2023-04-17 00:00:00'),(2,8,'dinesh','2023-04-17 00:00:00');
+/*!40000 ALTER TABLE `insulin_progress` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `insulin_reading`
 --
 
@@ -53,11 +103,11 @@ CREATE TABLE `login` (
   `username` varchar(45) NOT NULL,
   `password` varchar(45) NOT NULL,
   `salt` varchar(256) DEFAULT NULL,
-  `user_type_id` int NOT NULL,
+  `type_name` varchar(45) NOT NULL,
   `cpr_no` varchar(45) NOT NULL,
   PRIMARY KEY (`username`),
-  KEY `Fk_user_type_id_idx` (`user_type_id`),
-  CONSTRAINT `Fk_user_type_id` FOREIGN KEY (`user_type_id`) REFERENCES `user_type` (`user_type_id`)
+  KEY `Fk_usertype_idx` (`type_name`),
+  CONSTRAINT `Ffk_usertype` FOREIGN KEY (`type_name`) REFERENCES `user_type` (`type_name`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -67,7 +117,7 @@ CREATE TABLE `login` (
 
 LOCK TABLES `login` WRITE;
 /*!40000 ALTER TABLE `login` DISABLE KEYS */;
-INSERT INTO `login` VALUES ('dinesh','1234',NULL,2,'1100'),('teko','1234',NULL,3,'1200');
+INSERT INTO `login` VALUES ('dinesh','1234',NULL,'patient','1100'),('teko','1234',NULL,'doctor','1200');
 /*!40000 ALTER TABLE `login` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -108,11 +158,10 @@ DROP TABLE IF EXISTS `user_type`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_type` (
-  `user_type_id` int NOT NULL AUTO_INCREMENT,
   `type_name` varchar(45) NOT NULL,
   `access_rights` varchar(45) DEFAULT NULL,
-  PRIMARY KEY (`user_type_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`type_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -121,7 +170,7 @@ CREATE TABLE `user_type` (
 
 LOCK TABLES `user_type` WRITE;
 /*!40000 ALTER TABLE `user_type` DISABLE KEYS */;
-INSERT INTO `user_type` VALUES (2,'Patient','call_ambulance,check_insulin'),(3,'Doctor','none'),(4,'Insurance_Company','none');
+INSERT INTO `user_type` VALUES ('doctor','see_progress'),('insurance_company','none'),('patient','call_ambulance,check_insulin,see_progress');
 /*!40000 ALTER TABLE `user_type` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -134,4 +183,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-04-09 22:20:40
+-- Dump completed on 2023-04-17 11:49:56

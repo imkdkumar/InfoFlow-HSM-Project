@@ -1,5 +1,6 @@
 package Client;
 
+import Model.InsulinProgress;
 import Server.HsmService;
 import Server.HsmServiceImplementation;
 import java.net.MalformedURLException;
@@ -39,12 +40,13 @@ public class HSMClient {
         String password = "";
         String JWT = "";
         menu.add("Press '1' TO LOGIN ");
-        menu.add("Press '2' TO MONITOR INSULIN ");
-        menu.add("Press '3' TO CALL AMBULANCE ");
-        menu.add("Press '4' TO GIVE ACESS TO DOCTOR ");
-        menu.add("Press '5' TO RECORD INSULIN DATA ");
-        menu.add("Press '6' TO PRINT REPORT ");
-        menu.add("Press '7' To EXIT");
+        menu.add("Press '2' TO MONITOR INSULIN LEVEL ");
+        menu.add("Press '3' TO MONITOR INSULIN PROGRESS");
+        menu.add("Press '4' TO CALL AMBULANCE ");
+        menu.add("Press '5' TO GIVE ACESS TO DOCTOR ");
+        menu.add("Press '6' TO RECORD INSULIN DATA ");
+        menu.add("Press '7' TO PRINT REPORT ");
+        menu.add("Press '8' To EXIT");
 
         try {
             while (!exit) {
@@ -98,18 +100,31 @@ public class HSMClient {
 
                         }
                         case 3 -> {
-                            //call ambulance
+                            //Monitor progress
+                            ArrayList<InsulinProgress> insulinLevel = service.monitorInsulinProgress(username, JWT);
+                            System.out.println("\n\n---------- Insulin Progress Information ----------\n");
+                                System.out.println("\n----------------------------------------------------------------------");
+                                System.out.println("|Patient Name      | Insulin Level      | Time      |");
+                                System.out.println("------------------------------------------------------------------------");
+                            for(InsulinProgress i : insulinLevel){
+                                
+                            
+                                System.out.println("\n"+ i.getPatientName() +"                    "+ i.getInsulinLevel() +"              "+i.getDate_time()+"     ");
+                            }
                         }
                         case 4 -> {
-                            //give docotor access
+                            //call ambulance
                         }
                         case 5 -> {
-                            //record insuline
+                            //give docotor access
                         }
                         case 6 -> {
-                            //print report
+                            //record insuline
                         }
                         case 7 -> {
+                            //print report
+                        }
+                        case 8 -> {
                             exit = true;
                         }
                     }
@@ -117,6 +132,7 @@ public class HSMClient {
                 }
             }
         } catch (RemoteException e) {
+            System.out.println(e.toString());
 
         }
     }

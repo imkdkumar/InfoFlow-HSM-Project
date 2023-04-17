@@ -4,6 +4,7 @@
  */
 package Server;
 
+import Model.InsulinProgress;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -17,22 +18,27 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 /**
  *
  * @author kumarkhadka
  */
-public class HsmServiceImplementation extends UnicastRemoteObject implements HsmService{
+public class HsmServiceImplementation extends UnicastRemoteObject implements HsmService {
+
     public static Key signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    
-    public HsmServiceImplementation() throws RemoteException{
+
+    public HsmServiceImplementation() throws RemoteException {
         super();
     }
 //
@@ -51,24 +57,24 @@ public class HsmServiceImplementation extends UnicastRemoteObject implements Hsm
         }
 
         try {
-            query = "SELECT username, password, salt, type_name, access_rights FROM db_if_hsm.login as lg "
+            query = "SELECT lg.username, lg.password, lg.salt, lg.type_name, ut.access_rights FROM db_if_hsm.login as lg "
                     + "inner join  db_if_hsm.user_type as ut  "
-                    + "on ut.user_type_id = lg.user_type_id where lg.username='" + username + "'";
+                    + "on ut.type_name = lg.type_name where lg.username='" + username + "'";
             PreparedStatement ps;
             ps = conn.prepareStatement(query);
             ResultSet result = ps.executeQuery();
             int session = 20;//minute
 
             if (result.next()) {
-                
+
                 String userType = result.getString("type_name");
-                
+
                 if (password.equals(result.getString("password"))) {
-                    String jwt = createJWT(username, session, userType);
+                    String JWT = createJWT(username, session, userType);
                     String currentUser = "\n\n ---- User Information ---- \nUsername: "
                             + username.toUpperCase();
                     conn.close();
-                    return new ImmutablePair<>(jwt, currentUser + "\n\n---- Session Information ---\n Session is Started for 15 Minutes for " +username.toUpperCase() +" ....");
+                    return new ImmutablePair<>(JWT, currentUser + "\n\n---- Session Information ---\n Session is Started for 15 Minutes for " + username.toUpperCase() + " ....");
 
                 } else {
                     System.out.println("Server Side Message: Password do not match");
@@ -88,18 +94,94 @@ public class HsmServiceImplementation extends UnicastRemoteObject implements Hsm
 
     @Override
     public String monitorInsulinLevel(String username, String JWT) throws RemoteException {
+        Connection conn = getDatabaseConnection();
         Random r = new Random();
         String returnMessage = "";
-        
+
         int low = 1;
         int high = 100;
-        int insulinLevel = r.nextInt(high-low)+low;
+        int insulinLevel = r.nextInt(high - low) + low;
         if (!decodeJWT(JWT, username, "check_insulin")) {
             return returnMessage;
         } else {
-            returnMessage = Integer.toString(insulinLevel);
+
+            try {
+                //String query = "Insert into INSERT INTO db_if_hsm.insulin_progress(insulin_level,patient_name,data_time) values(?,?,?)";
+                String query = " insert into db_if_hsm.insulin_progress (insulin_level, patient_name, data_time)"
+                        + " values (?, ?, ?)";
+//            Date date = new java.util.Date();
+//            java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+//            java.sql.Timestamp sqlTime = new java.sql.Timestamp(date.getTime());
+
+                Calendar calendar = Calendar.getInstance();
+                java.sql.Date insulineDate = new java.sql.Date(calendar.getTime().getTime());
+
+                PreparedStatement ps = conn.prepareStatement(query);
+                ps.setInt(1, insulinLevel);
+                ps.setString(2, username);
+                ps.setDate(3, insulineDate);
+                ps.executeUpdate();
+                ps.close();
+                conn.close();
+            } catch (Exception e) {
+                System.out.println("Insert Problem:" + e.toString());
+            }
         }
+
+        returnMessage = Integer.toString(insulinLevel);
+
         return returnMessage;
+    }
+
+    @Override
+    public ArrayList<InsulinProgress> monitorInsulinProgress(String username, String JWT) throws RemoteException {
+        String returnMessage = "";
+        Connection conn = getDatabaseConnection();
+        
+        ArrayList<InsulinProgress> data = new ArrayList<>();
+        if (!decodeJWT(JWT, username, "see_progress")) {
+            return null;
+        } else {
+
+            try {
+                if ("patient".equals(getUserType(username))) {
+                    String query = "Select insulin_level, patient_name, data_time from db_if_hsm.insulin_progress";
+                    PreparedStatement ps;
+                    ps = conn.prepareStatement(query);
+                    ResultSet result = ps.executeQuery();
+                   
+
+                    while (result.next()) {
+                        
+                        int insulin_level = result.getInt("insulin_level");
+
+                        // creating sql date object
+                        java.sql.Date sqlDate = result.getDate("data_time");
+
+                        // creating util date object by passing gettime()
+                        // method of sql date class
+                        java.util.Date utilDate = new java.util.Date(sqlDate.getTime());
+
+                        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+                        // converting the util date into string format
+                        final String stringDate = dateFormat.format(utilDate);
+                        
+                        InsulinProgress ip = new InsulinProgress();
+                        ip.setInsulinLevel(insulin_level);
+                        ip.setPatientName(username);
+                        ip.setDate_time(utilDate);
+                        data.add(ip);
+
+                    } 
+                }
+
+            } catch (Exception e) {
+                System.out.println("Server Side Message: User Management Error!" + e.toString());
+
+            }
+        }
+        return data;
     }
 
     @Override
@@ -121,9 +203,7 @@ public class HsmServiceImplementation extends UnicastRemoteObject implements Hsm
     public String printPatientReport(String isEmergency, String JWT) throws RemoteException {
         return null;
     }
-    
-    
-    
+
     public boolean decodeJWT(String JWT, String username, String access_right) {
         boolean isValid = false;
         Date now = new Date();
@@ -156,7 +236,7 @@ public class HsmServiceImplementation extends UnicastRemoteObject implements Hsm
         return isValid;
 
     }
-    
+
     public String createJWT(String username, int session, String userType) {
 
         Date now = new Date();
@@ -173,7 +253,22 @@ public class HsmServiceImplementation extends UnicastRemoteObject implements Hsm
 
         return JWT;
     }
-    
+
+    public String getUserType(String username) throws SQLException {
+        String type;
+        try ( Connection conn = getDatabaseConnection()) {
+            String query = "SELECT type_name from db_if_hsm.login where username='" + username + "'";
+            PreparedStatement ps = conn.prepareStatement(query);
+            ResultSet result = ps.executeQuery();
+            type = "";
+            if (result.next()) {
+                type = result.getString("type_name");
+            }
+        }
+        return type;
+
+    }
+
     public String getAccessRights(String user_type_name) throws SQLException {
         String access_rights;
         try ( Connection conn = getDatabaseConnection()) {
@@ -188,8 +283,8 @@ public class HsmServiceImplementation extends UnicastRemoteObject implements Hsm
         return access_rights;
 
     }
-    
-    public Connection getDatabaseConnection(){
+
+    public Connection getDatabaseConnection() {
         Properties properties = new Properties();
         String path = System.getProperty("user.dir");
         path += "/src/db_cred.txt";
@@ -213,4 +308,5 @@ public class HsmServiceImplementation extends UnicastRemoteObject implements Hsm
         }
         return conn;
     }
+
 }
